@@ -1,0 +1,1265 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Laboratorio de límites · Matemáticas</title>
+<meta name="description" content="Laboratorio interactivo de límites: aproximación con gráficas en movimiento, tabla numérica, límites laterales y procedimiento algebraico paso a paso, con funciones predeterminadas y entrada libre.">
+<style>/* ===========================================================
+   LABORATORIO DE LÍMITES — identidad vibrante "aproximación"
+   Base índigo-violeta. Acento en degradado cian→violeta.
+   Izquierda magenta, derecha cian, valor límite en oro.
+   =========================================================== */
+:root{
+  --bg:#0B0A1F; --bg2:#151235; --bg3:#1C1745; --bg4:#251E58;
+  --line:rgba(150,140,230,.16); --line2:rgba(150,140,230,.32);
+  --paper:#ECEBFF; --mute:#A9A6D6; --mute2:#7C79AE;
+  --g1:#35E0F0; --g2:#A66BFF;                 /* degradado de marca */
+  --izq:#FF5CA8; --der:#35E0F0; --oro:#FFD166; --curva:#C9D4FF;
+  --izq-s:rgba(255,92,168,.14); --der-s:rgba(53,224,240,.14); --oro-s:rgba(255,209,102,.15);
+  --sans:system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+  --mono:ui-monospace,SFMono-Regular,Menlo,Consolas,"Liberation Mono",monospace;
+  --serif:"Iowan Old Style",Georgia,"Times New Roman",serif;
+  --r:16px; --maxw:1300px;
+}
+*{box-sizing:border-box}
+html,body{margin:0;padding:0}
+body{
+  background:var(--bg); color:var(--paper); font-family:var(--sans);
+  font-size:15.5px; line-height:1.6; -webkit-font-smoothing:antialiased; min-height:100vh;
+  background-image:
+    radial-gradient(1200px 600px at 84% -14%, rgba(166,107,255,.16), transparent 58%),
+    radial-gradient(1000px 560px at 2% 0%, rgba(53,224,240,.12), transparent 56%),
+    radial-gradient(760px 500px at 60% 120%, rgba(255,92,168,.08), transparent 60%);
+  background-attachment:fixed;
+}
+.wrap{max-width:var(--maxw);margin:0 auto;padding:0 22px}
+h1,h2,h3,h4{margin:0;font-weight:700;letter-spacing:-.015em}
+b,strong{color:#fff;font-weight:700}
+i,var{font-family:var(--serif);font-style:italic}
+.mono{font-family:var(--mono)}
+.grad{background:linear-gradient(100deg,var(--g1),var(--g2));-webkit-background-clip:text;background-clip:text;color:transparent}
+
+/* ---------- encabezado ---------- */
+header.top{position:sticky;top:0;z-index:40;background:rgba(11,10,31,.82);backdrop-filter:blur(16px);border-bottom:1px solid var(--line)}
+.top-in{max-width:var(--maxw);margin:0 auto;padding:13px 22px;display:flex;gap:16px;align-items:center;flex-wrap:wrap}
+.brand{display:flex;align-items:center;gap:13px;min-width:0}
+.brand .mk{width:42px;height:42px;flex:0 0 42px;border-radius:12px;display:grid;place-items:center;
+  background:linear-gradient(135deg,var(--g1),var(--g2));color:#0B0A1F;font-weight:800;font-family:var(--serif);font-style:italic;font-size:20px;
+  box-shadow:0 6px 22px rgba(166,107,255,.4)}
+.brand h1{font-size:19px;line-height:1.12}
+.brand .sub{font-family:var(--mono);font-size:10.5px;letter-spacing:.17em;text-transform:uppercase;color:var(--mute2)}
+.live{margin-left:auto;display:flex;align-items:center;gap:10px;font-family:var(--serif);font-size:19px;color:var(--paper);
+  background:rgba(255,255,255,.03);border:1px solid var(--line);border-radius:12px;padding:8px 15px;max-width:100%;overflow-x:auto}
+.live .lim-sym{font-family:var(--sans);font-style:normal;font-weight:600;color:var(--mute)}
+@media(max-width:720px){.live{display:none}}
+
+/* ---------- pestañas (arriba) ---------- */
+nav.tabs{position:sticky;top:69px;z-index:38;background:rgba(11,10,31,.9);backdrop-filter:blur(16px);border-bottom:1px solid var(--line)}
+.tabs-in{max-width:var(--maxw);margin:0 auto;padding:0 22px;display:flex;gap:4px;overflow-x:auto;scrollbar-width:none}
+.tabs-in::-webkit-scrollbar{display:none}
+.tab{appearance:none;cursor:pointer;background:none;border:0;color:var(--mute);font-family:var(--sans);font-size:14.5px;font-weight:500;
+  padding:16px 16px 13px;white-space:nowrap;display:flex;align-items:center;gap:9px;position:relative;transition:color .18s}
+.tab .ic{width:18px;height:18px}
+.tab:hover{color:var(--paper)}
+.tab[aria-selected="true"]{color:#fff}
+.tab[aria-selected="true"]::after{content:"";position:absolute;left:12px;right:12px;bottom:0;height:3px;border-radius:3px 3px 0 0;
+  background:linear-gradient(90deg,var(--g1),var(--g2))}
+.tab:focus-visible{outline:2px solid var(--g1);outline-offset:-4px;border-radius:6px}
+
+/* ---------- consola de función (compartida) ---------- */
+main{padding:22px 0 90px}
+.console{border:1px solid var(--line);border-radius:var(--r);background:linear-gradient(180deg,rgba(28,23,69,.6),rgba(21,18,53,.6));padding:16px 18px}
+.finput{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.finput .fx{font-family:var(--serif);font-style:italic;font-size:21px;color:var(--curva);flex:0 0 auto}
+.finput input.expr{flex:1 1 260px;min-width:180px;font-family:var(--mono);font-size:16px;color:var(--paper);
+  background:var(--bg);border:1px solid var(--line2);border-radius:11px;padding:11px 14px;transition:.16s}
+.finput input.expr:focus{outline:none;border-color:var(--g2);box-shadow:0 0 0 3px rgba(166,107,255,.22)}
+.finput input.expr.err{border-color:var(--izq);box-shadow:0 0 0 3px var(--izq-s)}
+.finput .arrow{font-family:var(--serif);font-style:italic;font-size:19px;color:var(--mute);flex:0 0 auto}
+.finput input.pt{width:88px;font-family:var(--mono);font-size:16px;color:var(--paper);background:var(--bg);
+  border:1px solid var(--line2);border-radius:11px;padding:11px 12px;text-align:center}
+.finput input.pt:focus{outline:none;border-color:var(--g1);box-shadow:0 0 0 3px rgba(53,224,240,.22)}
+.errmsg{display:none;color:#FFC2DC;font-size:13px;margin-top:9px}
+.errmsg.on{display:block}
+.exbtn{margin-left:auto}
+.gallery{margin-top:14px;display:none}
+.gallery.on{display:block}
+.gcat{font-family:var(--mono);font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--mute2);margin:11px 0 7px}
+.chips{display:flex;gap:7px;flex-wrap:wrap}
+.chip{appearance:none;cursor:pointer;font-family:var(--mono);font-size:12.5px;color:var(--mute);background:rgba(255,255,255,.03);
+  border:1px solid var(--line);border-radius:9px;padding:7px 11px;transition:.15s;display:flex;gap:7px;align-items:center}
+.chip:hover{border-color:var(--g2);color:#fff;transform:translateY(-1px)}
+.chip.on{border-color:var(--g1);color:#fff;background:linear-gradient(100deg,rgba(53,224,240,.16),rgba(166,107,255,.16))}
+.chip .tg{font-size:9px;letter-spacing:.08em;text-transform:uppercase;color:var(--mute2)}
+.chip:focus-visible{outline:2px solid var(--g1);outline-offset:2px}
+
+/* ---------- disposición por pestaña ---------- */
+.panel{display:none}
+.panel.on{display:block;animation:rise .34s cubic-bezier(.22,1,.36,1)}
+@keyframes rise{from{opacity:0;transform:translateY(9px)}to{opacity:1;transform:none}}
+.lab{display:grid;gap:18px;margin-top:18px}
+@media(min-width:960px){.lab{grid-template-columns:1.6fr 1fr;align-items:start}}
+.stage{border:1px solid var(--line);border-radius:var(--r);position:relative;overflow:hidden;
+  background:linear-gradient(180deg,rgba(21,18,53,.7),rgba(11,10,31,.7));padding:12px}
+.stage::before{content:"";position:absolute;inset:0;background:
+  linear-gradient(rgba(150,140,230,.05) 1px,transparent 1px),
+  linear-gradient(90deg,rgba(150,140,230,.05) 1px,transparent 1px);background-size:32px 32px;pointer-events:none}
+canvas.plot{display:block;width:100%;height:480px;border-radius:10px;position:relative;z-index:1}
+@media(max-width:640px){canvas.plot{height:350px}}
+.legend{display:flex;gap:15px;flex-wrap:wrap;font-family:var(--mono);font-size:11.5px;color:var(--mute);margin:11px 4px 2px}
+.legend span{display:flex;align-items:center;gap:6px}
+.sw{width:15px;height:3px;border-radius:2px;display:inline-block}
+.sw.dot{width:9px;height:9px;border-radius:50%}
+.rail{display:grid;gap:15px}
+.card{border:1px solid var(--line);border-radius:var(--r);background:rgba(21,18,53,.6);padding:18px}
+.card h3{font-size:18px;margin-bottom:5px;letter-spacing:-.01em}
+.card .hint{color:var(--mute);font-size:13.5px;margin:0}
+.eyebrow{font-family:var(--mono);font-size:10.5px;letter-spacing:.16em;text-transform:uppercase;color:var(--g1);margin-bottom:9px}
+
+/* ---------- lecturas tipo instrumento ---------- */
+.verdict{border:1px solid var(--line2);border-radius:14px;overflow:hidden;background:var(--bg)}
+.verdict .big{padding:20px;text-align:center;background:linear-gradient(180deg,rgba(255,209,102,.06),transparent)}
+.verdict .big .k{font-family:var(--mono);font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--mute2);display:block;margin-bottom:8px}
+.verdict .big .v{font-family:var(--serif);font-size:40px;font-weight:700;color:var(--oro);line-height:1}
+.verdict .big .v.ne{font-size:26px;color:var(--izq)}
+.verdict .two{display:grid;grid-template-columns:1fr 1fr;border-top:1px solid var(--line)}
+.verdict .two>div{padding:13px 15px}
+.verdict .two>div+div{border-left:1px solid var(--line)}
+.verdict .two .k{font-family:var(--mono);font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:var(--mute2)}
+.verdict .two .v{font-family:var(--mono);font-size:20px;font-weight:600;margin-top:3px}
+.v.izq{color:var(--izq)} .v.der{color:var(--der)}
+
+/* ---------- botones y controles ---------- */
+.row{display:flex;gap:9px;flex-wrap:wrap;align-items:center}
+.btn{appearance:none;cursor:pointer;font-family:var(--sans);font-size:13.5px;font-weight:600;color:var(--paper);
+  background:rgba(255,255,255,.05);border:1px solid var(--line2);border-radius:11px;padding:10px 15px;transition:.15s;
+  display:inline-flex;align-items:center;gap:8px}
+.btn:hover{border-color:var(--g2);color:#fff;transform:translateY(-1px)}
+.btn .ic{width:15px;height:15px}
+.btn.izq:hover{border-color:var(--izq)} .btn.der:hover{border-color:var(--der)}
+.btn.pri{background:linear-gradient(100deg,var(--g1),var(--g2));color:#0B0A1F;border:0;box-shadow:0 6px 20px rgba(166,107,255,.32)}
+.btn.pri:hover{filter:brightness(1.06)}
+.btn:focus-visible{outline:2px solid var(--g1);outline-offset:2px}
+.btn:disabled{opacity:.4;cursor:not-allowed;transform:none}
+.ctl label{font-family:var(--mono);font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--mute);display:flex;justify-content:space-between;margin-bottom:4px}
+.ctl label b{color:var(--oro);font-size:13px}
+input[type=range]{-webkit-appearance:none;appearance:none;width:100%;height:5px;border-radius:99px;background:var(--line2);outline:none}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:19px;height:19px;border-radius:50%;background:var(--oro);border:3px solid var(--bg);cursor:pointer;box-shadow:0 0 0 1px var(--oro)}
+input[type=range]::-moz-range-thumb{width:16px;height:16px;border-radius:50%;background:var(--oro);border:3px solid var(--bg);cursor:pointer}
+
+/* ---------- tablas ---------- */
+.tw{overflow-x:auto;border:1px solid var(--line);border-radius:12px}
+table.t{width:100%;border-collapse:collapse;font-family:var(--mono);font-size:13px}
+table.t th{text-align:left;font-weight:500;color:var(--mute2);font-size:10px;letter-spacing:.1em;text-transform:uppercase;padding:10px 12px;border-bottom:1px solid var(--line2)}
+table.t th.mh{text-transform:none;letter-spacing:0;font-size:12.5px;font-family:var(--serif);font-style:italic;color:var(--mute)}
+table.t td{padding:8px 12px;border-bottom:1px solid var(--line);color:#DDDBFA}
+table.t tr:last-child td{border-bottom:0}
+table.t tr.hl td{background:var(--oro-s);color:#fff;font-weight:600}
+.c-izq{color:var(--izq)} .c-der{color:var(--der)} .c-oro{color:var(--oro)}
+
+/* ---------- procedimiento ---------- */
+.pasos{display:grid;gap:11px}
+.paso{border:1px solid var(--line);border-left:3px solid;border-image:linear-gradient(180deg,var(--g1),var(--g2)) 1;
+  border-radius:0 12px 12px 0;padding:15px 17px;background:rgba(255,255,255,.02);animation:rise .3s ease}
+.paso h4{font-size:13px;font-weight:700;color:var(--g1);letter-spacing:.02em;margin-bottom:6px}
+.paso .bd{font-size:14px;color:#D3D1F2}
+.paso .mth{margin-top:11px;padding:13px 15px;background:var(--bg);border-radius:10px;font-family:var(--serif);font-size:20px;color:#fff;overflow-x:auto}
+
+/* ---------- matemáticas (fracciones y radicales del motor) ---------- */
+.math{font-family:var(--serif);color:#fff}
+.lim-sym{font-family:var(--sans);font-style:normal;font-weight:600}
+sub{font-size:.68em}
+sup{font-size:.68em}
+
+.fr{display:inline-flex;flex-direction:column;vertical-align:middle;text-align:center;margin:0 .2em;line-height:1.15}
+.fr-n{padding:0 .34em;border-bottom:1.4px solid currentColor}
+.fr-d{padding:.05em .34em 0}
+.rad{display:inline-flex;align-items:flex-start}
+.rad-in{border-top:1.4px solid currentColor;padding:1px .18em 0 .1em;margin-top:.14em}
+.fname{font-family:var(--sans);font-size:.86em;font-style:normal}
+.explain{border-left:3px solid var(--oro);background:var(--oro-s);padding:13px 16px;border-radius:0 12px 12px 0}
+.explain .lbl{font-family:var(--mono);font-size:10px;letter-spacing:.13em;text-transform:uppercase;color:var(--oro);display:block;margin-bottom:5px}
+.explain p{margin:0;font-size:13.5px;color:#EDE7D2}
+
+footer{border-top:1px solid var(--line);padding:26px 0 44px;color:var(--mute2);font-size:12.5px}
+footer .aut{font-family:var(--serif);font-style:italic;font-size:15px;color:var(--paper)}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+<header class="top">
+  <div class="top-in">
+    <div class="brand">
+      <span class="mk">lim</span>
+      <span>
+        <h1>Laboratorio de <span class="grad">límites</span></h1>
+        <span class="sub">Explora · tabula · compara · resuelve</span>
+      </span>
+    </div>
+    <div class="live" id="live"></div>
+  </div>
+</header>
+
+<nav class="tabs"><div class="tabs-in" id="tabs" role="tablist"></div></nav>
+
+<main>
+  <div class="wrap">
+    <div class="console" id="console"></div>
+  </div>
+  <section class="panel on" id="p-aprox" role="tabpanel"></section>
+  <section class="panel" id="p-tabla" role="tabpanel"></section>
+  <section class="panel" id="p-lat" role="tabpanel"></section>
+  <section class="panel" id="p-proc" role="tabpanel"></section>
+</main>
+
+<footer>
+  <div class="wrap">
+    <div class="aut">Creada por Ing. Astrid Bolívar</div>
+    <div style="margin-top:6px">Herramienta didáctica interactiva de límites · funciona sin conexión a internet · sintaxis: + − * / ^ ( ), sqrt, sin, cos, tan, ln, exp, log, abs · multiplicación implícita (2x, 3(x+1)).</div>
+  </div>
+</footer>
+
+<script>/* ===== Motor: parser, evaluador, resolutor de límites ===== */
+/* ============================================================
+   MOTOR MATEMATICO - Limites (nivel introductorio)
+   Parser de descenso recursivo + algebra de polinomios +
+   resolutor de limites con procedimiento paso a paso.
+   ============================================================ */
+(function (root) {
+  'use strict';
+
+  /* ---------- utilidades numericas ---------- */
+  var EPS = 1e-10;
+  function near(a, b, tol) { return Math.abs(a - b) <= (tol || 1e-9) * Math.max(1, Math.abs(a), Math.abs(b)); }
+  function isZero(v) { return Math.abs(v) < 1e-11; }
+
+  // aproximacion racional (fracciones continuas) para mostrar 1/4 en vez de 0.25
+  function toFraction(v, maxDen) {
+    maxDen = maxDen || 10000;
+    if (!isFinite(v)) return null;
+    if (isZero(v)) return { n: 0, d: 1 };
+    var sign = v < 0 ? -1 : 1, x = Math.abs(v);
+    var h1 = 1, h0 = 0, k1 = 0, k0 = 1, b = x;
+    do {
+      var a = Math.floor(b);
+      var h2 = a * h1 + h0; h0 = h1; h1 = h2;
+      var k2 = a * k1 + k0; k0 = k1; k1 = k2;
+      if (k1 > maxDen) return null;
+      if (Math.abs(x - h1 / k1) < 1e-12) return { n: sign * h1, d: k1 };
+      b = 1 / (b - a);
+    } while (isFinite(b) && k1 <= maxDen);
+    return null;
+  }
+
+  function fmtNum(v, dec) {
+    if (v === Infinity) return '+\u221E';
+    if (v === -Infinity) return '\u2212\u221E';
+    if (typeof v !== 'number' || isNaN(v)) return 'indefinido';
+    if (isZero(v)) return '0';
+    if (Number.isInteger(v)) return String(v).replace('-', '\u2212');
+    var f = toFraction(v);
+    if (f && f.d !== 1 && f.d <= 200) return (f.n < 0 ? '\u2212' : '') + Math.abs(f.n) + '/' + f.d;
+    var s = v.toFixed(dec === undefined ? 4 : dec);
+    s = s.replace(/0+$/, '').replace(/\.$/, '');
+    return s.replace('-', '\u2212');
+  }
+  // version HTML (fraccion apilada)
+  function fmtNumHTML(v) {
+    if (v === Infinity) return '+\u221E';
+    if (v === -Infinity) return '\u2212\u221E';
+    if (typeof v !== 'number' || isNaN(v)) return 'indefinido';
+    if (Number.isInteger(v)) return String(v);
+    var f = toFraction(v);
+    if (f && f.d !== 1 && f.d <= 200) {
+      var sg = f.n < 0 ? '\u2212' : '';
+      return sg + frac(String(Math.abs(f.n)), String(f.d));
+    }
+    return fmtNum(v);
+  }
+  function frac(a, b) {
+    return '<span class="fr"><span class="fr-n">' + a + '</span><span class="fr-d">' + b + '</span></span>';
+  }
+
+  /* ---------- tokenizador ---------- */
+  var FUNCS = ['sqrt', 'sin', 'cos', 'tan', 'abs', 'ln', 'exp', 'log'];
+  function tokenize(s) {
+    s = String(s).replace(/\s+/g, '')
+      .replace(/\u2212/g, '-').replace(/\u00B7|\u00D7/g, '*')
+      .replace(/\u221A/g, 'sqrt').replace(/\u03C0/g, 'pi');
+    var t = [], i = 0;
+    while (i < s.length) {
+      var c = s[i];
+      if (/[0-9.]/.test(c)) {
+        var j = i; while (j < s.length && /[0-9.]/.test(s[j])) j++;
+        t.push({ k: 'num', v: parseFloat(s.slice(i, j)) }); i = j; continue;
+      }
+      if (/[a-zA-Z]/.test(c)) {
+        var j2 = i; while (j2 < s.length && /[a-zA-Z]/.test(s[j2])) j2++;
+        var w = s.slice(i, j2);
+        if (FUNCS.indexOf(w) >= 0) t.push({ k: 'fn', v: w });
+        else if (w === 'pi') t.push({ k: 'num', v: Math.PI });
+        else if (w === 'e' ) t.push({ k: 'num', v: Math.E });
+        else if (w.length === 1 && w === 'x') t.push({ k: 'var' });
+        else throw new Error('S\u00EDmbolo no reconocido: ' + w);
+        i = j2; continue;
+      }
+      if ('+-*/^()'.indexOf(c) >= 0) { t.push({ k: c }); i++; continue; }
+      throw new Error('Car\u00E1cter no v\u00E1lido: ' + c);
+    }
+    return t;
+  }
+
+  /* ---------- parser ---------- */
+  function parse(str) {
+    var t = tokenize(str), p = 0;
+    function peek() { return t[p]; }
+    function eat(k) { if (t[p] && t[p].k === k) { return t[p++]; } return null; }
+    function expect(k) { var r = eat(k); if (!r) throw new Error('Se esperaba "' + k + '"'); return r; }
+
+    function expr() {
+      var n = term();
+      while (peek() && (peek().k === '+' || peek().k === '-')) {
+        var op = t[p++].k; n = { t: op, l: n, r: term() };
+      }
+      return n;
+    }
+    function term() {
+      var n = unary();
+      while (peek()) {
+        var k = peek().k;
+        if (k === '*' || k === '/') { p++; n = { t: k, l: n, r: unary() }; }
+        else if (k === 'num' || k === 'var' || k === 'fn' || k === '(') { n = { t: '*', l: n, r: unary() }; }
+        else break;
+      }
+      return n;
+    }
+    function unary() {
+      if (eat('-')) return { t: 'neg', e: unary() };
+      if (eat('+')) return unary();
+      return power();
+    }
+    function power() {
+      var b = atom();
+      if (peek() && peek().k === '^') { p++; return { t: '^', l: b, r: unary() }; }
+      return b;
+    }
+    function atom() {
+      var tk = peek();
+      if (!tk) throw new Error('Expresi\u00F3n incompleta');
+      if (tk.k === 'num') { p++; return { t: 'num', v: tk.v }; }
+      if (tk.k === 'var') { p++; return { t: 'var' }; }
+      if (tk.k === 'fn') { p++; expect('('); var a = expr(); expect(')'); return { t: 'fn', name: tk.v, arg: a }; }
+      if (tk.k === '(') { p++; var e = expr(); expect(')'); return e; }
+      throw new Error('Token inesperado');
+    }
+    var out = expr();
+    if (p < t.length) throw new Error('Expresi\u00F3n mal formada');
+    return out;
+  }
+
+  /* ---------- evaluacion numerica ---------- */
+  function evalAst(n, x) {
+    switch (n.t) {
+      case 'num': return n.v;
+      case 'var': return x;
+      case 'neg': return -evalAst(n.e, x);
+      case '+': return evalAst(n.l, x) + evalAst(n.r, x);
+      case '-': return evalAst(n.l, x) - evalAst(n.r, x);
+      case '*': return evalAst(n.l, x) * evalAst(n.r, x);
+      case '/': return evalAst(n.l, x) / evalAst(n.r, x);
+      case '^': return Math.pow(evalAst(n.l, x), evalAst(n.r, x));
+      case 'fn': {
+        var v = evalAst(n.arg, x);
+        switch (n.name) {
+          case 'sqrt': return Math.sqrt(v);
+          case 'sin': return Math.sin(v);
+          case 'cos': return Math.cos(v);
+          case 'tan': return Math.tan(v);
+          case 'abs': return Math.abs(v);
+          case 'ln': return Math.log(v);
+          case 'log': return Math.log(v) / Math.LN10;
+          case 'exp': return Math.exp(v);
+        }
+      }
+    }
+    return NaN;
+  }
+
+  /* ---------- render HTML de la expresion ---------- */
+  function prec(n) {
+    switch (n.t) { case '+': case '-': return 1; case '*': return 2; case '/': return 2; case 'neg': return 2; case '^': return 4; default: return 5; }
+  }
+  function render(n, parentPrec) {
+    parentPrec = parentPrec || 0;
+    var s, p0 = prec(n);
+    switch (n.t) {
+      case 'num': s = fmtNum(n.v); break;
+      case 'var': s = '<i>x</i>'; break;
+      case 'neg': s = '\u2212' + render(n.e, 3); break;
+      case '+': s = render(n.l, 1) + ' + ' + render(n.r, 1); break;
+      case '-': s = render(n.l, 1) + ' \u2212 ' + render(n.r, 2); break;
+      case '*': {
+        var a = render(n.l, 2), b = render(n.r, 2);
+        var needDot = /[0-9]$/.test(a.replace(/<[^>]+>/g, '')) && /^[0-9]/.test(b.replace(/<[^>]+>/g, ''));
+        s = a + (needDot ? '\u00B7' : '') + b; break;
+      }
+      case '/': return frac(render(n.l, 0), render(n.r, 0));
+      case '^': {
+        var base = render(n.l, 5);
+        if (prec(n.l) < 5) base = '(' + render(n.l, 0) + ')';
+        s = base + '<sup>' + render(n.r, 0) + '</sup>'; break;
+      }
+      case 'fn': {
+        if (n.name === 'sqrt') return '<span class="rad">\u221A<span class="rad-in">' + render(n.arg, 0) + '</span></span>';
+        if (n.name === 'abs') return '|' + render(n.arg, 0) + '|';
+        s = '<span class="fname">' + n.name + '</span>(' + render(n.arg, 0) + ')'; break;
+      }
+    }
+    if (p0 < parentPrec) return '(' + s + ')';
+    return s;
+  }
+
+  /* ---------- polinomios: coeficientes [a0, a1, a2...] ---------- */
+  function pAdd(a, b) { var r = [], n = Math.max(a.length, b.length); for (var i = 0; i < n; i++) r[i] = (a[i] || 0) + (b[i] || 0); return pTrim(r); }
+  function pSub(a, b) { var r = [], n = Math.max(a.length, b.length); for (var i = 0; i < n; i++) r[i] = (a[i] || 0) - (b[i] || 0); return pTrim(r); }
+  function pMul(a, b) { var r = new Array(a.length + b.length - 1).fill(0); for (var i = 0; i < a.length; i++) for (var j = 0; j < b.length; j++) r[i + j] += a[i] * b[j]; return pTrim(r); }
+  function pPow(a, k) { var r = [1]; for (var i = 0; i < k; i++) r = pMul(r, a); return r; }
+  function pTrim(a) { var r = a.slice(); while (r.length > 1 && isZero(r[r.length - 1])) r.pop(); return r; }
+  function pEval(a, x) { var s = 0; for (var i = a.length - 1; i >= 0; i--) s = s * x + a[i]; return s; }
+  function pIsZero(a) { return a.every(isZero); }
+  function pDeg(a) { return pTrim(a).length - 1; }
+  // division sintetica por (x - r): devuelve cociente
+  function pDivRoot(a, r) {
+    var n = a.length, q = new Array(n - 1), carry = a[n - 1];
+    for (var i = n - 2; i >= 0; i--) { q[i] = carry; carry = a[i] + carry * r; }
+    return { q: pTrim(q), rem: carry };
+  }
+  function pToAst(c) {
+    c = pTrim(c);
+    var node = null;
+    for (var i = c.length - 1; i >= 0; i--) {
+      if (isZero(c[i])) continue;
+      var term;
+      var coefAbs = Math.abs(c[i]);
+      if (i === 0) term = { t: 'num', v: coefAbs };
+      else {
+        var xp = i === 1 ? { t: 'var' } : { t: '^', l: { t: 'var' }, r: { t: 'num', v: i } };
+        term = near(coefAbs, 1) ? xp : { t: '*', l: { t: 'num', v: coefAbs }, r: xp };
+      }
+      if (node === null) node = c[i] < 0 ? { t: 'neg', e: term } : term;
+      else node = { t: c[i] < 0 ? '-' : '+', l: node, r: term };
+    }
+    return node || { t: 'num', v: 0 };
+  }
+  function pRender(c) { return render(pToAst(c), 0); }
+  // envoltura para productos: omite el factor 1 y los parentesis innecesarios
+  function pWrap(c) {
+    c = pTrim(c);
+    if (c.length === 1 && near(c[0], 1)) return '';
+    var terms = c.filter(function (v) { return !isZero(v); }).length;
+    return terms > 1 ? '(' + pRender(c) + ')' : pRender(c);
+  }
+  function mulDisp(a, b) { return (a && b) ? a + '\u00B7' + b : (a || b || '1'); }
+  function divDisp(nHtml, dHtml) { return (dHtml === '' || dHtml === '1') ? nHtml : frac(nHtml, dHtml); }
+
+  /* ---------- AST -> forma racional N(x)/D(x) ---------- */
+  function toRational(n) {
+    switch (n.t) {
+      case 'num': return { N: [n.v], D: [1] };
+      case 'var': return { N: [0, 1], D: [1] };
+      case 'neg': { var a = toRational(n.e); if (!a) return null; return { N: pMul([-1], a.N), D: a.D }; }
+      case '+': case '-': {
+        var l = toRational(n.l), r = toRational(n.r); if (!l || !r) return null;
+        var N = n.t === '+' ? pAdd(pMul(l.N, r.D), pMul(r.N, l.D)) : pSub(pMul(l.N, r.D), pMul(r.N, l.D));
+        return { N: N, D: pMul(l.D, r.D) };
+      }
+      case '*': { var l2 = toRational(n.l), r2 = toRational(n.r); if (!l2 || !r2) return null; return { N: pMul(l2.N, r2.N), D: pMul(l2.D, r2.D) }; }
+      case '/': { var l3 = toRational(n.l), r3 = toRational(n.r); if (!l3 || !r3) return null; return { N: pMul(l3.N, r3.D), D: pMul(l3.D, r3.N) }; }
+      case '^': {
+        if (n.r.t !== 'num' || !Number.isInteger(n.r.v) || n.r.v < 0 || n.r.v > 8) return null;
+        var b = toRational(n.l); if (!b) return null;
+        return { N: pPow(b.N, n.r.v), D: pPow(b.D, n.r.v) };
+      }
+      default: return null;
+    }
+  }
+
+  /* ---------- limite numerico (tabla lateral) ---------- */
+  function lateralTable(node, a, side, hs) {
+    hs = hs || [0.5, 0.1, 0.01, 0.001, 0.0001, 0.00001];
+    return hs.map(function (h) {
+      var x = side < 0 ? a - h : a + h;
+      var y = evalAst(node, x);
+      return { x: x, y: y };
+    });
+  }
+  function numericSide(node, a, side) {
+    var hs = [1e-2, 1e-3, 1e-4, 1e-5, 1e-6, 1e-7];
+    var vals = [];
+    for (var i = 0; i < hs.length; i++) {
+      var v = evalAst(node, side < 0 ? a - hs[i] : a + hs[i]);
+      if (isFinite(v)) vals.push(v);
+    }
+    if (vals.length < 3) return NaN;
+    var last = vals.slice(-3);
+    var spread = Math.max.apply(null, last) - Math.min.apply(null, last);
+    var mag = Math.max.apply(null, last.map(Math.abs));
+    if (mag > 1e8 && spread > 1) return vals[vals.length - 1] > 0 ? Infinity : -Infinity;
+    if (spread > 1e-3 * Math.max(1, mag)) {
+      if (mag > 1e6) return vals[vals.length - 1] > 0 ? Infinity : -Infinity;
+      return NaN;
+    }
+    var v2 = vals[vals.length - 1];
+    var f = toFraction(v2, 1000);
+    if (f && Math.abs(f.n / f.d - v2) < 1e-7) return f.n / f.d;
+    return v2;
+  }
+
+  /* ---------- conjugado: patron (A ± B) con radical ---------- */
+  function hasSqrt(n) {
+    if (!n) return false;
+    if (n.t === 'fn') return n.name === 'sqrt' || hasSqrt(n.arg);
+    return hasSqrt(n.l) || hasSqrt(n.r) || hasSqrt(n.e);
+  }
+  function squareOfTerm(n) { // devuelve polinomio de n^2 si n es sqrt(poly) o poly
+    if (n.t === 'fn' && n.name === 'sqrt') { var r = toRational(n.arg); if (r && r.D.length === 1) return pMul(r.N, [1 / r.D[0]]); return null; }
+    var q = toRational(n); if (q && q.D.length === 1) { var p = pMul(q.N, [1 / q.D[0]]); return pMul(p, p); }
+    return null;
+  }
+  function conjugateOf(n) { // n = A ± B -> A ∓ B  (solo si exactamente uno tiene raiz)
+    if (n.t !== '+' && n.t !== '-') return null;
+    var A = n.l, B = n.r;
+    if (hasSqrt(A) === hasSqrt(B)) return null;
+    var sq = { A: squareOfTerm(A), B: squareOfTerm(B) };
+    if (!sq.A || !sq.B) return null;
+    return { conj: { t: n.t === '-' ? '+' : '-', l: A, r: B }, diff: pSub(sq.A, sq.B) };
+  }
+
+  /* ============================================================
+     RESOLUTOR PRINCIPAL
+     ============================================================ */
+  function limit(input, a) {
+    var node = typeof input === 'string' ? parse(input) : input;
+    var steps = [];
+    var exprH = render(node, 0);
+    var res = {
+      expr: exprH, node: node, a: a, steps: steps,
+      value: NaN, left: NaN, right: NaN, exists: false,
+      method: 'numerico', hole: null, symbolic: false
+    };
+
+    res.left = numericSide(node, a, -1);
+    res.right = numericSide(node, a, +1);
+
+    function finish(v, method) {
+      res.value = v; res.method = method;
+      res.exists = isFinite(v);
+      if (!isFinite(res.left) || !isFinite(res.right)) { /* se conserva */ }
+      return res;
+    }
+
+    var R = toRational(node);
+    if (R) {
+      var Na = pEval(R.N, a), Da = pEval(R.D, a);
+      if (!isZero(Da)) {
+        res.symbolic = true;
+        steps.push({ title: 'Sustituci\u00F3n directa', body:
+          'La funci\u00F3n est\u00E1 definida en <i>x</i> = ' + fmtNum(a) + ', as\u00ED que evaluamos directamente.',
+          math: '\u00A0lim<sub><i>x</i>\u2192' + fmtNum(a) + '</sub> ' + exprH + ' = ' + fmtNumHTML(Na / Da) });
+        if (pDeg(R.D) > 0) {
+          steps.push({ title: 'Verificaci\u00F3n del denominador', body:
+            'Comprobamos primero que el denominador no se anule: al reemplazar se obtiene ' + fmtNum(Da) + ', distinto de cero. Por eso la sustituci\u00F3n es v\u00E1lida.' });
+        }
+        return finish(Na / Da, 'sustitucion');
+      }
+      // Da = 0
+      if (isZero(Na)) {
+        res.symbolic = true;
+        steps.push({ title: 'Paso 1 \u00B7 Intentar sustituci\u00F3n', body:
+          'Al reemplazar <i>x</i> = ' + fmtNum(a) + ' obtenemos ' + frac('0', '0') + ', que es una <b>forma indeterminada</b>: todav\u00EDa no dice cu\u00E1nto vale el l\u00EDmite, solo avisa que hay que transformar la expresi\u00F3n.' });
+        var N = R.N.slice(), D = R.D.slice(), k = 0;
+        while (isZero(pEval(N, a)) && isZero(pEval(D, a)) && pDeg(N) > 0 && pDeg(D) > 0 && k < 6) {
+          N = pDivRoot(N, a).q; D = pDivRoot(D, a).q; k++;
+        }
+        var fa = fmtNum(a);
+        var factorTxt = a === 0 ? '<i>x</i>' : (a > 0 ? '(<i>x</i> \u2212 ' + fa + ')' : '(<i>x</i> + ' + fmtNum(-a) + ')');
+        steps.push({ title: 'Paso 2 \u00B7 Factorizar', body:
+          'Como <i>x</i> = ' + fa + ' anula numerador y denominador, el factor ' + factorTxt + ' est\u00E1 en ambos' + (k > 1 ? ' (' + k + ' veces)' : '') + '.',
+          math: exprH + ' = ' + frac(
+            mulDisp(k === 1 ? factorTxt : factorTxt + '<sup>' + k + '</sup>', pWrap(N)),
+            mulDisp(k === 1 ? factorTxt : factorTxt + '<sup>' + k + '</sup>', pWrap(D))) });
+        steps.push({ title: 'Paso 3 \u00B7 Cancelar', body:
+          'Para <i>x</i> distinto de ' + fa + ' el factor com\u00FAn se cancela. Esto es v\u00E1lido porque el l\u00EDmite estudia valores <b>cercanos</b> a ' + fa + ', nunca el punto mismo.',
+          math: divDisp(pRender(N), pWrap(D) === '' ? '1' : pRender(D)) });
+        var Nv = pEval(N, a), Dv = pEval(D, a);
+        if (!isZero(Dv)) {
+          steps.push({ title: 'Paso 4 \u00B7 Sustituir en la expresi\u00F3n simplificada', body: 'Ahora s\u00ED se puede reemplazar sin indeterminaci\u00F3n.',
+            math: (near(Dv, 1) ? fmtNum(Nv) : frac(fmtNum(Nv), fmtNum(Dv)) + ' = ' + fmtNumHTML(Nv / Dv)) });
+          res.hole = { x: a, y: Nv / Dv };
+          return finish(Nv / Dv, 'factorizacion');
+        }
+        // quedo k/0 tras cancelar
+        return infiniteCase(res, N, D, a, steps, exprH);
+      }
+      // Na != 0, Da = 0
+      res.symbolic = true;
+      steps.push({ title: 'Paso 1 \u00B7 Intentar sustituci\u00F3n', body:
+        'Al reemplazar se obtiene ' + frac(fmtNum(Na), '0') + '. No es indeterminado: un numerador fijo dividido por algo que tiende a cero hace crecer la expresi\u00F3n sin l\u00EDmite finito.' });
+      return infiniteCase(res, R.N, R.D, a, steps, exprH);
+    }
+
+    // --- caso con radical: conjugado ---
+    if (node.t === '/' && hasSqrt(node.l)) {
+      var c = conjugateOf(node.l);
+      var Dr = toRational(node.r);
+      if (c && Dr && Dr.D.length === 1) {
+        var Dpoly = pMul(Dr.N, [1 / Dr.D[0]]);
+        var numAtA = evalAst(node.l, a), denAtA = pEval(Dpoly, a);
+        if (isZero(numAtA) && isZero(denAtA)) {
+          res.symbolic = true;
+          steps.push({ title: 'Paso 1 \u00B7 Intentar sustituci\u00F3n', body:
+            'Al reemplazar <i>x</i> = ' + fmtNum(a) + ' aparece ' + frac('0', '0') + ': forma indeterminada con radical.' });
+          steps.push({ title: 'Paso 2 \u00B7 Multiplicar por el conjugado', body:
+            'Multiplicamos numerador y denominador por el conjugado del numerador. Multiplicar por ' + frac('conjugado', 'conjugado') + ' es multiplicar por 1: no cambia el valor, s\u00F3lo la forma.',
+            math: exprH + ' \u00B7 ' + frac(render(c.conj, 0), render(c.conj, 0)) });
+          steps.push({ title: 'Paso 3 \u00B7 Aplicar diferencia de cuadrados', body:
+            'En el numerador (a \u2212 b)(a + b) = a<sup>2</sup> \u2212 b<sup>2</sup>, y el radical desaparece.',
+            math: frac(pRender(c.diff), mulDisp(pWrap(Dpoly), '(' + render(c.conj, 0) + ')')) });
+          var Nn = c.diff.slice(), Dd = Dpoly.slice(), kk = 0;
+          while (isZero(pEval(Nn, a)) && isZero(pEval(Dd, a)) && pDeg(Nn) > 0 && pDeg(Dd) > 0 && kk < 6) {
+            Nn = pDivRoot(Nn, a).q; Dd = pDivRoot(Dd, a).q; kk++;
+          }
+          var fac = a === 0 ? '<i>x</i>' : (a > 0 ? '(<i>x</i> \u2212 ' + fmtNum(a) + ')' : '(<i>x</i> + ' + fmtNum(-a) + ')');
+          if (kk > 0) {
+            steps.push({ title: 'Paso 4 \u00B7 Cancelar el factor com\u00FAn', body: 'Se cancela ' + fac + (kk > 1 ? '<sup>' + kk + '</sup>' : '') + ', v\u00E1lido para <i>x</i> distinto de ' + fmtNum(a) + '.',
+              math: frac(pRender(Nn), mulDisp(pWrap(Dd), '(' + render(c.conj, 0) + ')')) });
+          }
+          var cv = evalAst(c.conj, a), nv = pEval(Nn, a), dv = pEval(Dd, a);
+          if (!isZero(dv * cv)) {
+            var val = nv / (dv * cv);
+            steps.push({ title: 'Paso ' + (kk > 0 ? 5 : 4) + ' \u00B7 Sustituir', body: 'Ya no hay indeterminaci\u00F3n.',
+              math: frac(fmtNum(nv), near(dv, 1) ? fmtNum(cv) : fmtNum(dv) + '\u00B7' + fmtNum(cv)) + ' = ' + fmtNumHTML(val) });
+            res.hole = { x: a, y: val };
+            return finish(val, 'conjugado');
+          }
+        }
+      }
+    }
+
+    // --- limites trigonometricos fundamentales ---
+    var trig = trigPattern(node, a);
+    if (trig) {
+      res.symbolic = true;
+      steps.push({ title: 'Paso 1 \u00B7 Intentar sustituci\u00F3n', body: 'Se obtiene ' + frac('0', '0') + ': indeterminaci\u00F3n.' });
+      steps.push({ title: 'Paso 2 \u00B7 Usar el l\u00EDmite trigonom\u00E9trico fundamental', body: trig.body, math: trig.math });
+      return finish(trig.value, 'trigonometrico');
+    }
+
+    // --- degradacion controlada: estimacion numerica ---
+    steps.push({ title: 'M\u00E9todo num\u00E9rico', body:
+      'Esta expresi\u00F3n queda fuera de los m\u00E9todos algebraicos que maneja esta calculadora (sustituci\u00F3n, factorizaci\u00F3n, conjugado y l\u00EDmites trigonom\u00E9tricos fundamentales). En lugar de inventar un procedimiento, se estima el valor acerc\u00E1ndose a ' + fmtNum(a) + ' por ambos lados.' });
+    var v = (isFinite(res.left) && isFinite(res.right) && near(res.left, res.right, 1e-5)) ? (res.left + res.right) / 2 : NaN;
+    return finish(v, 'numerico');
+  }
+
+  function infiniteCase(res, N, D, a, steps, exprH) {
+    var node = { t: '/', l: pToAst(N), r: pToAst(D) };
+    var l = numericSide(node, a, -1), r = numericSide(node, a, +1);
+    res.left = l; res.right = r;
+    steps.push({ title: 'Paso 2 \u00B7 Analizar los l\u00EDmites laterales', body:
+      'Estudiamos el signo del denominador a cada lado de <i>x</i> = ' + fmtNum(a) + '.',
+      math: 'lim<sub><i>x</i>\u2192' + fmtNum(a) + '<sup>\u2212</sup></sub> = ' + fmtNum(l) + '\u00A0\u00A0\u00A0\u00A0lim<sub><i>x</i>\u2192' + fmtNum(a) + '<sup>+</sup></sub> = ' + fmtNum(r) });
+    if (l === r && !isFinite(l)) {
+      steps.push({ title: 'Conclusi\u00F3n', body: 'Los dos lados crecen sin cota en el mismo sentido: el l\u00EDmite es ' + fmtNum(l) + '. En sentido estricto <b>el l\u00EDmite no existe como n\u00FAmero</b>; la notaci\u00F3n ' + fmtNum(l) + ' describe c\u00F3mo diverge. Hay una as\u00EDntota vertical en <i>x</i> = ' + fmtNum(a) + '.' });
+      res.value = l; res.exists = false; res.method = 'infinito'; res.asymptote = a;
+      return res;
+    }
+    steps.push({ title: 'Conclusi\u00F3n', body: 'Los laterales difieren, de modo que el l\u00EDmite <b>no existe</b>. Hay una as\u00EDntota vertical en <i>x</i> = ' + fmtNum(a) + '.' });
+    res.value = NaN; res.exists = false; res.method = 'infinito'; res.asymptote = a;
+    return res;
+  }
+
+  function trigPattern(node, a) {
+    if (a !== 0 || node.t !== '/') return null;
+    function linCoef(n) { var r = toRational(n); if (!r || r.D.length !== 1) return null; var p = pMul(r.N, [1 / r.D[0]]); if (pDeg(p) !== 1 || !isZero(p[0])) return null; return p[1]; }
+    var L = node.l, D = node.r;
+    // sin(kx)/(mx)  ó  tan(kx)/(mx)
+    if (L.t === 'fn' && (L.name === 'sin' || L.name === 'tan')) {
+      var k = linCoef(L.arg), m = linCoef(D);
+      if (k && m) {
+        return { value: k / m, body: 'Sabemos que lim<sub><i>u</i>\u21920</sub> ' + frac('sen <i>u</i>', '<i>u</i>') + ' = 1. Ajustamos el argumento multiplicando y dividiendo por ' + fmtNum(k) + '.',
+          math: frac((L.name === 'sin' ? 'sen' : 'tan') + '(' + fmtNum(k) + '<i>x</i>)', fmtNum(m) + '<i>x</i>') + ' = ' + frac(fmtNum(k), fmtNum(m)) + ' \u00B7 ' + frac((L.name === 'sin' ? 'sen' : 'tan') + '(' + fmtNum(k) + '<i>x</i>)', fmtNum(k) + '<i>x</i>') + ' \u2192 ' + fmtNumHTML(k / m) };
+      }
+    }
+    // (mx)/sin(kx)
+    if (D.t === 'fn' && (D.name === 'sin' || D.name === 'tan')) {
+      var k2 = linCoef(D.arg), m2 = linCoef(L);
+      if (k2 && m2) return { value: m2 / k2, body: 'Usamos el rec\u00EDproco del l\u00EDmite fundamental: lim<sub><i>u</i>\u21920</sub> ' + frac('<i>u</i>', 'sen <i>u</i>') + ' = 1.', math: '\u2192 ' + fmtNumHTML(m2 / k2) };
+    }
+    // (1 - cos x)/x
+    if (L.t === '-' && L.l.t === 'num' && near(L.l.v, 1) && L.r.t === 'fn' && L.r.name === 'cos') {
+      var kc = linCoef(L.r.arg), mc = linCoef(D);
+      if (kc && mc) return { value: 0, body: 'El l\u00EDmite fundamental lim<sub><i>u</i>\u21920</sub> ' + frac('1 \u2212 cos <i>u</i>', '<i>u</i>') + ' = 0 resuelve el caso.', math: '\u2192 0' };
+    }
+    return null;
+  }
+
+  /* ---------- muestreo para graficar ---------- */
+  function sample(node, xmin, xmax, n, skipX) {
+    n = n || 600;
+    var pts = [], dx = (xmax - xmin) / n;
+    for (var i = 0; i <= n; i++) {
+      var x = xmin + i * dx;
+      if (skipX !== undefined && Math.abs(x - skipX) < dx * 0.35) { pts.push(null); continue; }
+      var y = evalAst(node, x);
+      pts.push(isFinite(y) ? { x: x, y: y } : null);
+    }
+    return pts;
+  }
+
+  var METODO = { sustitucion: 'sustituci\u00F3n directa', factorizacion: 'factorizaci\u00F3n',
+    conjugado: 'multiplicaci\u00F3n por el conjugado', trigonometrico: 'l\u00EDmite trigonom\u00E9trico fundamental',
+    infinito: 'an\u00E1lisis de l\u00EDmites laterales', numerico: 'estimaci\u00F3n num\u00E9rica' };
+
+  var API = {
+    parse: parse, evalAst: evalAst, render: render, limit: limit,
+    lateralTable: lateralTable, numericSide: numericSide, sample: sample,
+    fmtNum: fmtNum, fmtNumHTML: fmtNumHTML, frac: frac, toFraction: toFraction,
+    toRational: toRational, pEval: pEval, pRender: pRender, pDivRoot: pDivRoot, METODO: METODO
+  };
+  root.LIM = API;
+  if (typeof module !== 'undefined' && module.exports) module.exports = API;
+})(typeof window !== 'undefined' ? window : globalThis);
+
+/* ===== Graficador ===== */
+/* ============================================================
+   GRAFICADOR CANVAS - ejes, curva, hueco, aproximacion animada
+   ============================================================ */
+(function (root) {
+  'use strict';
+  var C = {
+    grid: 'rgba(150,140,220,0.10)', axis: 'rgba(210,214,250,0.55)',
+    txt: 'rgba(198,200,238,0.9)', izq: '#FF5CA8', der: '#35E0F0', hueco: '#FFD166',
+    curva: '#C9D4FF'   // color fijo de la curva; no colisiona con los colores de los lados
+  };
+
+  function Graph(canvas, opts) {
+    this.cv = canvas; this.ctx = canvas.getContext('2d');
+    this.o = Object.assign({ acc: C.curva }, opts || {});
+    this.o.curva = C.curva;
+    this.view = { x0: -5, x1: 5, y0: -5, y1: 5 };
+    this.f = null; this.hole = null; this.a = null; this.piece = null;
+    this.marker = null; this.pair = null; this.raf = null; this.trailL = []; this.trailR = [];
+    this.asymptote = null;
+    this.resize();
+  }
+  Graph.prototype.resize = function () {
+    var r = this.cv.getBoundingClientRect();
+    var dpr = Math.min(window.devicePixelRatio || 1, 2);
+    var w = Math.max(240, r.width || this.cv.clientWidth || 600);
+    var h = Math.max(180, r.height || this.cv.clientHeight || 340);
+    this.cv.width = Math.round(w * dpr); this.cv.height = Math.round(h * dpr);
+    this.W = w; this.H = h; this.ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  };
+  Graph.prototype.setFn = function (f, cfg) {
+    cfg = cfg || {};
+    this.f = f; this.a = cfg.a; this.hole = cfg.hole || null;
+    this.piece = cfg.piece || null; this.asymptote = cfg.asymptote;
+    this.autoView(cfg.span || 4);
+    return this;
+  };
+  Graph.prototype.evalAt = function (x) {
+    if (this.piece) return x < this.piece.at ? this.piece.izq(x) : this.piece.der(x);
+    return this.f(x);
+  };
+  Graph.prototype.autoView = function (span) {
+    var a = this.a === undefined || this.a === null ? 0 : this.a;
+    var x0 = a - span, x1 = a + span, ys = [];
+    for (var i = 0; i <= 400; i++) {
+      var x = x0 + (x1 - x0) * i / 400;
+      if (this.a !== undefined && Math.abs(x - this.a) < 1e-3) continue;
+      var y = this.evalAt(x);
+      if (isFinite(y)) ys.push(y);
+    }
+    ys.sort(function (p, q) { return p - q; });
+    var lo = ys[Math.floor(ys.length * 0.06)] || -5, hi = ys[Math.floor(ys.length * 0.94)] || 5;
+    if (this.hole) { lo = Math.min(lo, this.hole.y); hi = Math.max(hi, this.hole.y); }
+    if (!isFinite(lo) || !isFinite(hi) || hi - lo < 1e-6) { lo = -5; hi = 5; }
+    var pad = (hi - lo) * 0.22 + 0.5;
+    this.view = { x0: x0, x1: x1, y0: lo - pad, y1: hi + pad };
+    return this;
+  };
+  Graph.prototype.px = function (x) { return (x - this.view.x0) / (this.view.x1 - this.view.x0) * this.W; };
+  Graph.prototype.py = function (y) { return this.H - (y - this.view.y0) / (this.view.y1 - this.view.y0) * this.H; };
+
+  Graph.prototype.draw = function () {
+    var g = this.ctx, W = this.W, H = this.H, v = this.view;
+    g.clearRect(0, 0, W, H);
+    // rejilla
+    var stepX = niceStep(v.x1 - v.x0), stepY = niceStep(v.y1 - v.y0);
+    g.lineWidth = 1; g.strokeStyle = C.grid; g.beginPath();
+    for (var x = Math.ceil(v.x0 / stepX) * stepX; x <= v.x1; x += stepX) { var X = Math.round(this.px(x)) + .5; g.moveTo(X, 0); g.lineTo(X, H); }
+    for (var y = Math.ceil(v.y0 / stepY) * stepY; y <= v.y1; y += stepY) { var Y = Math.round(this.py(y)) + .5; g.moveTo(0, Y); g.lineTo(W, Y); }
+    g.stroke();
+    // ejes
+    g.strokeStyle = C.axis; g.lineWidth = 1.4; g.beginPath();
+    if (v.y0 < 0 && v.y1 > 0) { var Y0 = Math.round(this.py(0)) + .5; g.moveTo(0, Y0); g.lineTo(W, Y0); }
+    if (v.x0 < 0 && v.x1 > 0) { var X0 = Math.round(this.px(0)) + .5; g.moveTo(X0, 0); g.lineTo(X0, H); }
+    g.stroke();
+    // etiquetas de eje x
+    g.fillStyle = C.txt; g.font = '11px ui-monospace, SFMono-Regular, Menlo, monospace'; g.textAlign = 'center';
+    var yBase = (v.y0 < 0 && v.y1 > 0) ? this.py(0) + 13 : H - 6;
+    for (var x2 = Math.ceil(v.x0 / stepX) * stepX; x2 <= v.x1; x2 += stepX) {
+      if (Math.abs(x2) < 1e-9) continue;
+      var Xl = this.px(x2);
+      if (Xl < 22 || Xl > W - 16) continue;   // evita etiquetas recortadas en los bordes
+      g.fillText(fmtTick(x2, stepX), Xl, Math.min(H - 3, Math.max(11, yBase)));
+    }
+    g.textAlign = 'right';
+    var xBase = (v.x0 < 0 && v.x1 > 0) ? this.px(0) - 6 : W - 4;
+    for (var y2 = Math.ceil(v.y0 / stepY) * stepY; y2 <= v.y1; y2 += stepY) {
+      if (Math.abs(y2) < 1e-9) continue;
+      var Yl = this.py(y2);
+      if (Yl < 12 || Yl > H - 8) continue;
+      g.fillText(fmtTick(y2, stepY), Math.max(26, xBase), Yl + 4);
+    }
+    // asintota
+    if (this.asymptote !== undefined && this.asymptote !== null) {
+      g.save(); g.setLineDash([5, 5]); g.strokeStyle = 'rgba(255,180,84,0.65)'; g.lineWidth = 1.4;
+      g.beginPath(); g.moveTo(this.px(this.asymptote), 0); g.lineTo(this.px(this.asymptote), H); g.stroke(); g.restore();
+    }
+    // curva
+    this.curve();
+    // linea vertical en a
+    if (this.a !== undefined && this.a !== null && this.asymptote === undefined) {
+      g.save(); g.setLineDash([3, 5]); g.strokeStyle = 'rgba(230,237,248,0.28)';
+      g.beginPath(); g.moveTo(this.px(this.a), 0); g.lineTo(this.px(this.a), H); g.stroke(); g.restore();
+    }
+    // rastros de aproximacion
+    this.drawTrail(this.trailL, C.izq); this.drawTrail(this.trailR, C.der);
+    // par de marcadores manuales (deslizador de cercania)
+    if (this.pair) { for (var pi=0; pi<this.pair.length; pi++) { var mp=this.pair[pi];
+      var col=mp.side<0?C.izq:C.der, MX=this.px(mp.x), MY=this.py(clamp(mp.y,this.view.y0,this.view.y1));
+      var gg=this.ctx; gg.save(); gg.setLineDash([2,4]); gg.strokeStyle=col; gg.globalAlpha=.6; gg.lineWidth=1;
+      gg.beginPath(); gg.moveTo(MX,MY); gg.lineTo(MX,this.py(this.view.y0)); gg.stroke();
+      gg.beginPath(); gg.moveTo(MX,MY); gg.lineTo(this.px(this.view.x0),MY); gg.stroke(); gg.restore();
+      gg.beginPath(); gg.arc(MX,MY,9,0,6.2832); gg.fillStyle=hexA(col,.2); gg.fill();
+      gg.beginPath(); gg.arc(MX,MY,5,0,6.2832); gg.fillStyle=col; gg.fill();
+      gg.lineWidth=1.6; gg.strokeStyle='#0B0A1F'; gg.stroke(); } }
+    // hueco
+    if (this.hole) {
+      var hx = this.px(this.hole.x), hy = this.py(this.hole.y);
+      g.save(); g.setLineDash([4, 4]); g.strokeStyle = 'rgba(255,180,84,0.5)'; g.lineWidth = 1;
+      g.beginPath(); g.moveTo(hx, hy); g.lineTo(hx, this.py(this.view.y0)); g.stroke();
+      g.beginPath(); g.moveTo(hx, hy); g.lineTo(this.px(this.view.x0), hy); g.stroke(); g.restore();
+      g.beginPath(); g.arc(hx, hy, 5.5, 0, 6.2832);
+      g.fillStyle = '#0B0A1F'; g.fill(); g.lineWidth = 2.2; g.strokeStyle = C.hueco; g.stroke();
+    }
+    // marcador movil
+    if (this.marker) {
+      var m = this.marker, mx = this.px(m.x), my = this.py(m.y), col = m.side < 0 ? C.izq : C.der;
+      g.save(); g.setLineDash([2, 4]); g.strokeStyle = col; g.globalAlpha = .75; g.lineWidth = 1;
+      g.beginPath(); g.moveTo(mx, my); g.lineTo(mx, this.py(this.view.y0)); g.stroke();
+      g.beginPath(); g.moveTo(mx, my); g.lineTo(this.px(this.view.x0), my); g.stroke(); g.restore();
+      g.beginPath(); g.arc(mx, my, 9, 0, 6.2832); g.fillStyle = hexA(col, .18); g.fill();
+      g.beginPath(); g.arc(mx, my, 4.5, 0, 6.2832); g.fillStyle = col; g.fill();
+    }
+    if (this.o.after) this.o.after(this);
+  };
+  Graph.prototype.dot = function (x, y, col, hueco) {
+    var g = this.ctx;
+    g.beginPath(); g.arc(this.px(x), this.py(y), 5, 0, 6.2832);
+    if (hueco) { g.fillStyle = '#0B0A1F'; g.fill(); g.lineWidth = 2.2; g.strokeStyle = col; g.stroke(); }
+    else { g.fillStyle = col; g.fill(); }
+  };
+  Graph.prototype.drawTrail = function (arr, col) {
+    var g = this.ctx;
+    for (var i = 0; i < arr.length; i++) {
+      var p = arr[i];
+      if (!isFinite(p.y)) continue;
+      g.beginPath(); g.arc(this.px(p.x), this.py(p.y), 2.6, 0, 6.2832);
+      g.fillStyle = hexA(col, 0.25 + 0.6 * (i + 1) / arr.length); g.fill();
+    }
+  };
+  Graph.prototype.curve = function () {
+    var g = this.ctx, v = this.view, N = 900, started = false, prevY = null;
+    g.lineWidth = 2.4; g.strokeStyle = C.curva; g.lineJoin = 'round'; g.beginPath();
+    for (var i = 0; i <= N; i++) {
+      var x = v.x0 + (v.x1 - v.x0) * i / N;
+      if (this.a !== undefined && this.a !== null && Math.abs(x - this.a) < (v.x1 - v.x0) / N * 0.9) { started = false; prevY = null; continue; }
+      var y = this.evalAt(x);
+      if (!isFinite(y) || y > v.y1 + (v.y1 - v.y0) * 4 || y < v.y0 - (v.y1 - v.y0) * 4) { started = false; prevY = null; continue; }
+      if (prevY !== null && Math.abs(y - prevY) > (v.y1 - v.y0) * 0.8) { started = false; }
+      var X = this.px(x), Y = this.py(y);
+      if (!started) { g.moveTo(X, Y); started = true; } else { g.lineTo(X, Y); }
+      prevY = y;
+    }
+    g.stroke();
+  };
+
+  /* aproximacion animada: recorre h = 1, .5, .25 ... por un lado */
+  Graph.prototype.approach = function (side, onStep, onEnd) {
+    var self = this; this.stop();
+    var reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    var hs = [1, .7, .5, .35, .25, .18, .12, .08, .05, .03, .02, .012, .008, .005, .003, .002, .001];
+    var i = 0; if (side < 0) this.trailL = []; else this.trailR = [];
+    function tick() {
+      if (i >= hs.length) { self.marker = null; self.draw(); if (onEnd) onEnd(); return; }
+      var x = side < 0 ? self.a - hs[i] : self.a + hs[i];
+      var y = self.evalAt(x);
+      self.marker = { x: x, y: clamp(y, self.view.y0, self.view.y1), side: side, realY: y };
+      (side < 0 ? self.trailL : self.trailR).push({ x: x, y: clamp(y, self.view.y0, self.view.y1) });
+      self.draw();
+      if (onStep) onStep(x, y, i, hs.length);
+      i++;
+      self.raf = setTimeout(function () { self.raf = requestAnimationFrame(tick); }, reduce ? 10 : 145);
+    }
+    tick();
+  };
+  Graph.prototype.stop = function () { if (this.raf) { clearTimeout(this.raf); cancelAnimationFrame(this.raf); this.raf = null; } };
+  Graph.prototype.reset = function () { this.stop(); this.trailL = []; this.trailR = []; this.marker = null; this.pair = null; this.draw(); };
+
+  function clamp(v, a, b) { return !isFinite(v) ? b : Math.max(a, Math.min(b, v)); }
+  function niceStep(range) {
+    var raw = range / 8, p = Math.pow(10, Math.floor(Math.log(raw) / Math.LN10)), n = raw / p;
+    return (n < 1.5 ? 1 : n < 3 ? 2 : n < 7 ? 5 : 10) * p;
+  }
+  function fmtTick(v, step) {
+    var d = step < 0.1 ? 2 : step < 1 ? 1 : 0;
+    var s = v.toFixed(d);
+    if (Math.abs(parseFloat(s)) < 1e-9) s = '0';
+    return s.replace('-', '\u2212');
+  }
+  function hexA(hex, a) {
+    var h = hex.replace('#', '');
+    var r = parseInt(h.substr(0, 2), 16), g2 = parseInt(h.substr(2, 2), 16), b = parseInt(h.substr(4, 2), 16);
+    return 'rgba(' + r + ',' + g2 + ',' + b + ',' + a + ')';
+  }
+
+  root.Graph = Graph;
+  if (typeof module !== 'undefined' && module.exports) module.exports = Graph;
+})(typeof window !== 'undefined' ? window : globalThis);
+
+/* ===== Aplicación (pestañas) ===== */
+/* ============================================================
+   LABORATORIO DE LÍMITES — aplicación con pestañas superiores
+   ============================================================ */
+var APP = (function () {
+  'use strict';
+  function $(s,r){return (r||document).querySelector(s);}
+  function $$(s,r){return Array.prototype.slice.call((r||document).querySelectorAll(s));}
+  function el(t,c,h){var e=document.createElement(t);if(c)e.className=c;if(h!==undefined)e.innerHTML=h;return e;}
+
+  var S = { expr:'(x^2-4)/(x-2)', a:2, node:null, res:null, tab:'aprox', showGallery:false };
+  var g = null;
+
+  var TABS = [
+    { id:'aprox', t:'Aproximación', ic:'<path d="M3 17c5 0 6-11 12-11"/><circle cx="15" cy="6" r="1.7"/>' },
+    { id:'tabla', t:'Tabla numérica', ic:'<rect x="3" y="4" width="18" height="16" rx="2"/><path d="M3 10h18M9 4v16"/>' },
+    { id:'lat', t:'Límites laterales', ic:'<path d="M12 4v16"/><path d="M8 9l-4 3 4 3M16 9l4 3-4 3"/>' },
+    { id:'proc', t:'Procedimiento', ic:'<path d="M5 4h11l3 3v13H5z"/><path d="M9 10h7M9 14h7"/>' }
+  ];
+
+  var GALLERY = [
+    { cat:'Sustitución directa', items:[
+      { l:'3x²−2x+1', e:'3x^2-2x+1', a:2 },
+      { l:'(x+3)/(x−1)', e:'(x+3)/(x-1)', a:4 },
+      { l:'√(x+5)', e:'sqrt(x+5)', a:4 }
+    ]},
+    { cat:'Indeterminación 0/0 · factorizar', items:[
+      { l:'(x²−4)/(x−2)', e:'(x^2-4)/(x-2)', a:2 },
+      { l:'(x²−x−6)/(x−3)', e:'(x^2-x-6)/(x-3)', a:3 },
+      { l:'(x³−8)/(x−2)', e:'(x^3-8)/(x-2)', a:2 },
+      { l:'(x²−16)/(x²−3x−4)', e:'(x^2-16)/(x^2-3x-4)', a:4 }
+    ]},
+    { cat:'Racionalizar · conjugado', items:[
+      { l:'(√(x+4)−2)/x', e:'(sqrt(x+4)-2)/x', a:0 },
+      { l:'(√x−3)/(x−9)', e:'(sqrt(x)-3)/(x-9)', a:9 },
+      { l:'(√(x+7)−3)/(x−2)', e:'(sqrt(x+7)-3)/(x-2)', a:2 }
+    ]},
+    { cat:'Trigonométricos', items:[
+      { l:'sen(3x)/x', e:'sin(3x)/x', a:0 },
+      { l:'sen x/(2x)', e:'sin(x)/(2x)', a:0 },
+      { l:'tan x/x', e:'tan(x)/x', a:0 }
+    ]},
+    { cat:'No existe · asíntota · salto', items:[
+      { l:'1/x', e:'1/x', a:0 },
+      { l:'1/(x−2)²', e:'1/(x-2)^2', a:2 },
+      { l:'|x|/x', e:'abs(x)/x', a:0 },
+      { l:'(x+1)/(x−1)', e:'(x+1)/(x-1)', a:1 }
+    ]}
+  ];
+
+  var ICO={ izq:'<svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 6l-6 6 6 6"/></svg>',
+    der:'<svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10 6l6 6-6 6"/></svg>',
+    both:'<svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M8 6l-4 6 4 6M16 6l4 6-4 6"/></svg>',
+    reset:'<svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4v6h6"/><path d="M20 20v-6h-6"/><path d="M20 9A8 8 0 006 6L4 8M4 15a8 8 0 0014 3l2-2"/></svg>' };
+
+  /* ---------- helpers ---------- */
+  function limSym(a){ return '<span class="lim-sym">lim</span><sub><i>x</i>\u2192'+LIM.fmtNum(a)+'</sub>'; }
+  function fmt(v){ return LIM.fmtNum(v); }
+  function pasosHTML(res){
+    var h='<div class="pasos">';
+    res.steps.forEach(function(s){ h+='<div class="paso"><h4>'+s.title+'</h4>'+
+      (s.body?'<div class="bd">'+s.body+'</div>':'')+(s.math?'<div class="mth">'+s.math+'</div>':'')+'</div>'; });
+    return h+'</div>';
+  }
+  function resultHTML(res){
+    if(res.exists) return '<span class="v">'+LIM.fmtNumHTML(res.value)+'</span>';
+    if(res.value===Infinity||res.value===-Infinity) return '<span class="v ne">'+LIM.fmtNum(res.value)+'</span>';
+    return '<span class="v ne">no existe</span>';
+  }
+
+  /* ---------- tabs ---------- */
+  function renderTabs(){
+    var nav=$('#tabs'); nav.innerHTML='';
+    TABS.forEach(function(t){
+      var b=el('button','tab'); b.type='button'; b.setAttribute('role','tab'); b.dataset.tab=t.id;
+      b.setAttribute('aria-selected', S.tab===t.id?'true':'false');
+      b.innerHTML='<svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">'+t.ic+'</svg>'+t.t;
+      b.addEventListener('click',function(){ go(t.id); });
+      nav.appendChild(b);
+    });
+  }
+  function go(id){ S.tab=id; renderTabs();
+    $$('.panel').forEach(function(p){ p.classList.toggle('on', p.id==='p-'+id); });
+    render();
+  }
+
+  /* ---------- consola de función ---------- */
+  function renderConsole(){
+    var h='<div class="finput">'+
+      '<span class="fx"><i>f</i>(<i>x</i>) =</span>'+
+      '<input class="expr" id="expr" type="text" spellcheck="false" autocomplete="off" aria-label="Función" placeholder="p. ej.  (x^2-4)/(x-2)">'+
+      '<span class="arrow"><i>x</i> \u2192</span>'+
+      '<input class="pt" id="pt" type="text" spellcheck="false" autocomplete="off" aria-label="Punto de aproximación">'+
+      '<button class="btn exbtn" id="exToggle" type="button">Ejemplos</button>'+
+      '</div><div class="errmsg" id="errmsg"></div><div class="gallery'+(S.showGallery?' on':'')+'" id="gallery"></div>';
+    $('#console').innerHTML=h;
+    $('#expr').value=S.expr; $('#pt').value=LIM.fmtNum(S.a).replace('\u2212','-');
+    var gh='';
+    GALLERY.forEach(function(gr){ gh+='<div class="gcat">'+gr.cat+'</div><div class="chips">';
+      gr.items.forEach(function(it){ gh+='<button type="button" class="chip" data-e="'+it.e+'" data-a="'+it.a+'">'+it.l+'  <span class="tg">x\u2192'+it.a+'</span></button>'; });
+      gh+='</div>'; });
+    $('#gallery').innerHTML=gh;
+    marcarChip();
+    $('#expr').addEventListener('input',function(){ aplicar($('#expr').value.trim(), leerA()); });
+    $('#expr').addEventListener('keydown',function(e){ if(e.key==='Enter') aplicar($('#expr').value.trim(), leerA()); });
+    $('#pt').addEventListener('input',function(){ aplicar($('#expr').value.trim(), leerA()); });
+    $('#exToggle').addEventListener('click',function(){ S.showGallery=!S.showGallery; $('#gallery').classList.toggle('on',S.showGallery); });
+    $$('#gallery .chip').forEach(function(b){ b.addEventListener('click',function(){
+      $('#expr').value=b.dataset.e; $('#pt').value=b.dataset.a;
+      aplicar(b.dataset.e, parseFloat(b.dataset.a));
+    }); });
+  }
+  function leerA(){ var v=parseFloat(String($('#pt').value).replace(',', '.')); return isFinite(v)?v:S.a; }
+  function marcarChip(){ $$('#gallery .chip').forEach(function(b){ b.classList.toggle('on', b.dataset.e===S.expr && parseFloat(b.dataset.a)===S.a); }); }
+
+  /* ---------- aplicar función ---------- */
+  function aplicar(expr, a){
+    var inp=$('#expr'), err=$('#errmsg');
+    try{
+      var node=LIM.parse(expr); LIM.evalAst(node, a+0.37);
+      if(!isFinite(a)) throw new Error('El punto x debe ser un número.');
+      S.expr=expr; S.a=a; S.node=node; S.res=LIM.limit(node,a);
+      inp.classList.remove('err'); err.classList.remove('on'); err.textContent='';
+    }catch(e){
+      inp.classList.add('err'); err.classList.add('on');
+      err.textContent='No se pudo leer: '+e.message+'  Ejemplo válido: (x^2-4)/(x-2)  con  x\u21922';
+      return;
+    }
+    marcarChip(); updateLive(); render();
+  }
+  function updateLive(){
+    var L=$('#live');
+    if(L) L.innerHTML=limSym(S.a)+'&nbsp;'+S.res.expr+'&nbsp;<span class="lim-sym">=</span>&nbsp;'+resultHTML(S.res);
+  }
+
+  /* ---------- render de la pestaña activa ---------- */
+  function render(){
+    if(!S.node) return;
+    if(S.tab==='aprox') renderAprox();
+    else if(S.tab==='tabla') renderTabla();
+    else if(S.tab==='lat') renderLat();
+    else renderProc();
+  }
+
+  function stageHTML(canvasId, leg){
+    return '<div class="stage"><canvas class="plot" id="'+canvasId+'"></canvas></div>'+
+      '<div class="legend">'+leg+'</div>';
+  }
+  var LEG_APROX='<span><i class="sw" style="background:var(--curva)"></i>f(x)</span>'+
+    '<span><i class="sw dot" style="background:var(--izq)"></i>por la izquierda</span>'+
+    '<span><i class="sw dot" style="background:var(--der)"></i>por la derecha</span>'+
+    '<span><i class="sw dot" style="background:var(--oro)"></i>valor límite / hueco</span>';
+
+  function baseGraph(id){
+    var res=S.res, span=Math.max(2.4, Math.abs(S.a)*0.35+2.6);
+    g=new Graph($('#'+id));
+    g.setFn(function(x){return LIM.evalAst(S.node,x);}, { a:S.a, hole:res.hole, span:span, asymptote:res.asymptote });
+    if(res.asymptote!==undefined){ g.view.y0=-9; g.view.y1=9; }
+    g.draw(); return g;
+  }
+
+  /* ===== 1 · APROXIMACIÓN ===== */
+  function renderAprox(){
+    var res=S.res;
+    var neClass = res.exists?'':'ne';
+    var h='<div class="lab"><div>'+stageHTML('cvA',LEG_APROX)+'</div>'+
+      '<div class="rail">'+
+        '<div class="verdict">'+
+          '<div class="big"><span class="k">'+limSym(S.a)+' f(x)</span><span class="v '+neClass+'" id="vBig">'+
+            (res.exists?LIM.fmtNumHTML(res.value):(res.value===Infinity||res.value===-Infinity?LIM.fmtNum(res.value):'no existe'))+'</span></div>'+
+          '<div class="two"><div><span class="k">por la izquierda</span><div class="v izq" id="vIzq">'+fmt(res.left)+'</div></div>'+
+          '<div><span class="k">por la derecha</span><div class="v der" id="vDer">'+fmt(res.right)+'</div></div></div>'+
+        '</div>'+
+        '<div class="card"><div class="eyebrow">Controles</div>'+
+          '<p class="hint">Acerca el valor de <i>x</i> al punto <b>'+fmt(S.a)+'</b> desde cada lado y observa hacia dónde se dirige <i>f</i>(<i>x</i>).</p>'+
+          '<div class="row" style="margin-top:13px"><button class="btn izq" id="aIzq">'+ICO.izq+'Izquierda</button>'+
+            '<button class="btn der" id="aDer">'+ICO.der+'Derecha</button>'+
+            '<button class="btn pri" id="aBoth">'+ICO.both+'Ambos lados</button>'+
+            '<button class="btn" id="aReset">'+ICO.reset+'Reiniciar</button></div>'+
+          '<div class="ctl" style="margin-top:16px"><label>cercanía manual  ·  <i>h</i> <b id="hLbl">1</b></label>'+
+            '<input type="range" id="hSl" min="0" max="1000" value="0"></div>'+
+        '</div>'+
+        '<div class="explain"><span class="lbl">Idea</span><p>El límite describe una <b>tendencia</b>: hacia qué valor se dirige la función cuando <i>x</i> se acerca a '+fmt(S.a)+', sin importar qué pasa exactamente en el punto. '+
+          (res.exists?'Aquí ambos lados coinciden, así que el límite existe.':'Aquí los lados no llevan a un mismo número: el límite no existe como valor finito.')+'</p></div>'+
+      '</div></div>';
+    $('#p-aprox').innerHTML='<div class="wrap">'+h+'</div>';
+    var gg=baseGraph('cvA');
+    function tabla_side(side){ /* actualiza lecturas al animar */ }
+    $('#aIzq').addEventListener('click',function(){ gg.reset(); gg.approach(-1,null,null); });
+    $('#aDer').addEventListener('click',function(){ gg.reset(); gg.approach(1,null,null); });
+    $('#aBoth').addEventListener('click',function(){ gg.reset(); gg.approach(-1,null,function(){ gg.approach(1,null,null); }); });
+    $('#aReset').addEventListener('click',function(){ gg.reset(); $('#hSl').value=0; $('#hLbl').textContent='1'; });
+    $('#hSl').addEventListener('input',function(){
+      var t=(+this.value)/1000; var h=Math.pow(10, Math.log10(1) + t*(Math.log10(0.001)-Math.log10(1)));
+      $('#hLbl').textContent=h<0.01?h.toExponential(1):h.toFixed(3);
+      gg.stop(); gg.trailL=[]; gg.trailR=[];
+      var yl=LIM.evalAst(S.node,S.a-h), yr=LIM.evalAst(S.node,S.a+h);
+      gg.pair=[{x:S.a-h,y:yl,side:-1},{x:S.a+h,y:yr,side:1}];
+      gg.draw();
+      var vi=$('#vIzq'),vd=$('#vDer'); if(vi)vi.textContent=isFinite(yl)?LIM.fmtNum(yl):'\u2014'; if(vd)vd.textContent=isFinite(yr)?LIM.fmtNum(yr):'\u2014';
+    });
+  }
+
+  /* ===== 2 · TABLA NUMÉRICA ===== */
+  function renderTabla(){
+    var res=S.res, izq=LIM.lateralTable(S.node,S.a,-1), der=LIM.lateralTable(S.node,S.a,1);
+    var h='<div class="lab"><div>'+
+      '<div class="card"><div class="eyebrow">Evidencia numérica</div><h3>La función tabulada cerca de x = '+fmt(S.a)+'</h3>'+
+      '<p class="hint">Se evalúa <i>f</i>(<i>x</i>) con valores cada vez más próximos a '+fmt(S.a)+'. Si ambas columnas se estabilizan en el mismo número, ese es el límite.</p>'+
+      '<div class="lab" style="grid-template-columns:1fr 1fr;margin-top:14px">'+
+        tablaLado('Por la izquierda  (x < '+fmt(S.a)+')','izq',izq)+
+        tablaLado('Por la derecha  (x > '+fmt(S.a)+')','der',der)+
+      '</div></div></div>'+
+      '<div class="rail">'+
+        '<div class="verdict"><div class="big"><span class="k">candidato a límite</span><span class="v '+(res.exists?'':'ne')+'">'+
+          (res.exists?LIM.fmtNumHTML(res.value):'no se estabiliza')+'</span></div>'+
+          '<div class="two"><div><span class="k">tiende (izq.) a</span><div class="v izq">'+fmt(res.left)+'</div></div>'+
+          '<div><span class="k">tiende (der.) a</span><div class="v der">'+fmt(res.right)+'</div></div></div></div>'+
+        '<div class="explain"><span class="lbl">Cuidado</span><p>La tabla <b>sugiere</b> el valor; no lo demuestra. Una tabla con pocos pasos puede engañar: por eso se avanza hasta que las cifras dejan de cambiar. La confirmación la da el método algebraico.</p></div>'+
+        '<div class="row"><button class="btn pri" id="toProc">Ver el procedimiento algebraico</button></div>'+
+      '</div></div>';
+    $('#p-tabla').innerHTML='<div class="wrap">'+h+'</div>';
+    // animación de llenado
+    animFill('#tb-izq', izq, 'c-izq'); animFill('#tb-der', der, 'c-der');
+    $('#toProc').addEventListener('click',function(){ go('proc'); });
+  }
+  function tablaLado(titulo, cls, filas){
+    return '<div><div class="tw"><table class="t"><thead><tr><th colspan="2" class="c-'+cls+'">'+titulo+'</th></tr>'+
+      '<tr><th class="mh">x</th><th class="mh">f(x)</th></tr></thead><tbody id="tb-'+cls+'"></tbody></table></div></div>';
+  }
+  function animFill(sel, filas, cls){
+    var tb=$(sel); if(!tb) return; tb.innerHTML='';
+    var reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    var i=0;
+    (function paso(){
+      if(i>=filas.length) return;
+      var r=filas[i], tr=document.createElement('tr');
+      if(i===filas.length-1) tr.className='hl';
+      tr.innerHTML='<td>'+r.x.toFixed(6)+'</td><td class="'+cls+'">'+(isFinite(r.y)?(Math.abs(r.y)>1e6?r.y.toExponential(3):r.y.toFixed(6)):'\u2014')+'</td>';
+      tb.appendChild(tr); i++;
+      if(i<filas.length) setTimeout(paso, reduce?0:130);
+    })();
+  }
+
+  /* ===== 3 · LÍMITES LATERALES ===== */
+  var LEG_LAT='<span><i class="sw" style="background:var(--curva)"></i>f(x)</span>'+
+    '<span><i class="sw dot" style="background:var(--izq)"></i>límite por la izquierda</span>'+
+    '<span><i class="sw dot" style="background:var(--der)"></i>límite por la derecha</span>';
+  function renderLat(){
+    var res=S.res, coincide = res.exists;
+    var h='<div class="lab"><div>'+stageHTML('cvL',LEG_LAT)+'</div>'+
+      '<div class="rail">'+
+        '<div class="card"><div class="eyebrow">La regla de existencia</div><h3>¿Coinciden los dos lados?</h3>'+
+        '<p class="hint">El límite existe <b>si y solo si</b> el lado izquierdo y el derecho llevan al mismo valor.</p>'+
+        '<div class="verdict" style="margin-top:14px"><div class="two" style="border-top:0">'+
+          '<div><span class="k">lim x\u2192'+fmt(S.a)+'\u207B</span><div class="v izq" id="lIzq">'+fmt(res.left)+'</div></div>'+
+          '<div><span class="k">lim x\u2192'+fmt(S.a)+'\u207A</span><div class="v der" id="lDer">'+fmt(res.right)+'</div></div></div>'+
+          '<div class="big" style="border-top:1px solid var(--line)"><span class="k">veredicto</span>'+
+          '<span class="v '+(coincide?'':'ne')+'" style="font-size:'+(coincide?'34px':'24px')+'">'+
+          (coincide? (fmt(res.left)+' = '+fmt(res.right)+' \u2713') : (fmt(res.left)+' \u2260 '+fmt(res.right)))+'</span>'+
+          '<div class="hint" style="margin-top:8px">'+(coincide?'Los lados coinciden: el límite <b>existe</b> y vale '+fmt(res.value)+'.':'Los lados difieren: el límite <b>no existe</b>.')+'</div></div>'+
+        '</div>'+
+        '<div class="row" style="margin-top:14px"><button class="btn izq" id="lbIzq">'+ICO.izq+'Animar izquierda</button>'+
+          '<button class="btn der" id="lbDer">'+ICO.der+'Animar derecha</button>'+
+          '<button class="btn" id="lbReset">'+ICO.reset+'Reiniciar</button></div>'+
+        '</div>'+
+        '<div class="explain"><span class="lbl">Por qué importa</span><p>En funciones con saltos o asíntotas los dos lados pueden discrepar. Comprobar ambos por separado es la forma segura de decidir si el límite existe.</p></div>'+
+      '</div></div>';
+    $('#p-lat').innerHTML='<div class="wrap">'+h+'</div>';
+    var gg=baseGraph('cvL');
+    $('#lbIzq').addEventListener('click',function(){ gg.reset(); gg.approach(-1,null,null); });
+    $('#lbDer').addEventListener('click',function(){ gg.reset(); gg.approach(1,null,null); });
+    $('#lbReset').addEventListener('click',function(){ gg.reset(); });
+  }
+
+  /* ===== 4 · PROCEDIMIENTO ===== */
+  function renderProc(){
+    var res=S.res;
+    var h='<div class="lab"><div>'+
+      '<div class="card"><div class="eyebrow">Método: '+(LIM.METODO[res.method]||res.method)+'</div>'+
+      '<h3 class="math" style="font-weight:400">'+limSym(S.a)+' '+res.expr+'</h3>'+
+      '<div class="row" style="margin:14px 0"><button class="btn pri" id="pNext">Mostrar siguiente paso</button>'+
+        '<button class="btn" id="pAll">Ver todo</button><button class="btn" id="pReset">'+ICO.reset+'Reiniciar</button></div>'+
+      '<div id="pBox" class="pasos"></div>'+
+      '<div class="math" style="text-align:center;font-size:20px;margin-top:16px" id="pFinal"></div>'+
+      '</div></div>'+
+      '<div class="rail">'+
+        '<div>'+stageHTML('cvP','<span><i class="sw" style="background:var(--curva)"></i>f(x)</span><span><i class="sw dot" style="background:var(--oro)"></i>'+(res.asymptote!==undefined?'asíntota':'hueco / valor')+'</span>')+'</div>'+
+        '<div class="explain"><span class="lbl">Cómo se resuelve</span><p>Siempre se intenta primero la <b>sustitución directa</b>. Si aparece 0/0, se transforma la expresión (factorizar, racionalizar) y se vuelve a sustituir. Si el denominador se anula con numerador no nulo, hay asíntota.</p></div>'+
+      '</div></div>';
+    $('#p-proc').innerHTML='<div class="wrap">'+h+'</div>';
+    baseGraph('cvP');
+    var i=0, box=$('#pBox');
+    function add(){ if(i>=res.steps.length) return; var s=res.steps[i++];
+      var e=el('div','paso','<h4>'+s.title+'</h4>'+(s.body?'<div class="bd">'+s.body+'</div>':'')+(s.math?'<div class="mth">'+s.math+'</div>':''));
+      box.appendChild(e);
+      if(i>=res.steps.length){ $('#pNext').disabled=true; $('#pFinal').innerHTML=limSym(S.a)+' '+res.expr+' = '+
+        (res.exists?'<b>'+LIM.fmtNumHTML(res.value)+'</b>':(res.value===Infinity||res.value===-Infinity?LIM.fmtNum(res.value)+' <span style="color:var(--oro);font-size:14px">(no existe como número)</span>':'<span style="color:var(--izq)">no existe</span>')); }
+    }
+    $('#pNext').addEventListener('click',add);
+    $('#pAll').addEventListener('click',function(){ while(i<res.steps.length) add(); });
+    $('#pReset').addEventListener('click',function(){ i=0; box.innerHTML=''; $('#pNext').disabled=false; $('#pFinal').innerHTML=''; });
+    add();
+  }
+
+  /* ---------- init ---------- */
+  function init(){
+    renderTabs();
+    renderConsole();
+    aplicar(S.expr, S.a);
+    go('aprox');
+    window.addEventListener('resize',function(){ if(g && g.resize){ g.resize(); render(); } });
+  }
+  return { init:init, S:S, go:go, aplicar:aplicar };
+})();
+
+/* ===== Arranque ===== */
+(function(){function arranca(){try{APP.init();}catch(e){console.error(e);
+  document.body.insertAdjacentHTML('afterbegin','<div style="padding:16px;color:#FFC2DC;font-family:system-ui">No se pudo iniciar el laboratorio: '+e.message+'</div>');}}
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',arranca);else arranca();})();</script>
+</body>
+</html>
